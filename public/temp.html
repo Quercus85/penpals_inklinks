@@ -1,16 +1,4 @@
-// Establish a Socket.io connection
-const socket = io();
-// Initialize our Feathers client application through Socket.io
-// with hooks and authentication.
-const client = feathers();
-
-client.configure(feathers.socketio(socket));
-// Use localStorage to store our login token
-//client.configure(feathers.authentication());
-
-// Login screen
-const welcomeHTML =
-  `
+`
 <main class="mainpage container">
   <div class="row">
     <div class="col-12 col-6-tablet push-3-tablet text-center heading">
@@ -102,13 +90,13 @@ const welcomeHTML =
     <div class="error-message" style="color: red; display: none;"></div>
     <form class="form">
         <fieldset for="username">
-            Insert your Discord username:
+            Insert your Discord name:
             <label>
                 <input
                 class="block"
                 type="text"
                 name="username"
-                id="username"
+                id="name"
                 placeholder="Discord username"
               />
             </label>
@@ -154,104 +142,3 @@ const welcomeHTML =
   </div>
 </main>
 `
-  ;
-
-// Helper to safely escape HTML
-const escape = str => str.replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;').replace(/>/g, '&gt;')
-
-
-// Show the page
-const showPage = (error) => {
-  if (document.querySelectorAll('.mainpage').length && error) {
-    document.querySelector('.heading').insertAdjacentHTML('beforeend', `<p>There was an error: ${error.message}</p>`);
-  } else {
-    document.getElementById('app').innerHTML = welcomeHTML;
-  }
-};
-
-const addEventListener = (selector, event, handler) => {
-  document.addEventListener(event, async ev => {
-    if (ev.target.closest(selector)) {
-      handler(ev);
-    }
-  });
-};
-
-const dataCheck = (username, handle, country, giver) => {
-  resultObject = { name: undefined, handle: undefined, country: undefined, isGiver: false }
-  if (username.length > 0) {
-    resultObject.name = escape(username)
-  }
-  if (handle.length > 0) {
-    resultObject.handle = escape(handle)
-  }
-  if (country.length > 0) {
-    resultObject.country = escape(country)
-  }
-  resultObject.isGiver = giver;
-
-  console.log("oggetto risultante: " + JSON.stringify(resultObject))
-
-  return resultObject
-};
-
-const flushObject = (data) =>{
-  data.name= undefined;
-  data.handle= undefined;
-  data.country = undefined;
-  data.isGiver = undefined;
-}
-
-//the event listener check the data inserted and then create the data in the service
-addEventListener('.form', 'submit', async ev => {
-  const username = document.querySelector('[name="username"]').value;
-  const handle = document.querySelector('[name="handle"]').value;
-  const country = document.querySelector('[name="country"]').value;
-  const giver = document.querySelector('[name="giver"]').checked;
-  const errorMessage = document.querySelector('.error-message');
-
-  ev.preventDefault();
-  //input check
-  const dataToInsert = dataCheck(username, handle, country, giver);
-
-  if (dataToInsert.name == undefined) {
-    errorMessage.textContent = 'Discord username field is mandatory';
-    errorMessage.style.display = 'block';
-    flushObject(dataToInsert)
-    return;
-  } else if (dataToInsert.handle == undefined) {
-    errorMessage.textContent = 'Discord handle field is mandatory';
-    errorMessage.style.display = 'block';
-    flushObject(dataToInsert)
-    return;
-  } else {
-    errorMessage.style.display = 'none';
-  }
-
-  try {
-    const createHandle = await client.service('discordhandles').create({
-      name: dataToInsert.name,
-      handle: dataToInsert.handle,
-      country: dataToInsert.country,
-      isGiver: dataToInsert.isGiver
-    });
-
-    //chiamata al servizio
-    const result = createHandle;
-    console.log(result);
-
-    if (result != undefined) {
-      //fields reset
-      document.querySelector('[name="username"]').value = '';
-      document.querySelector('[name="handle"]').value = '';
-      document.querySelector('[name="country"]').value = '';
-      document.querySelector('[name="giver"]').checked = false;
-      flushObject(dataToInsert);
-    }
-  } catch (error) {
-    console.error('Errore durante l\'invio dei dati: ', error);
-  }
-});
-
-showPage();

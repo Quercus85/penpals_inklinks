@@ -1,8 +1,16 @@
+const debugMessage = async context => {
+  console.log("service PARTITO! " + JSON.stringify(context));
+  return context;
+};
 
+const afterMessage = async context => {
+  console.log("Ho creato qualcosa spero " + JSON.stringify(context));
+  return context;
+};
 
 module.exports = {
   before: {
-    all: [],
+    all: [debugMessage],
     find: [],
     get: [],
     create: [],
@@ -15,7 +23,7 @@ module.exports = {
     all: [],
     find: [],
     get: [],
-    create: [],
+    create: [afterMessage],
     update: [],
     patch: [],
     remove: []

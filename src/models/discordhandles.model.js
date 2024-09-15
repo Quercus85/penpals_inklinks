@@ -6,8 +6,20 @@ const DataTypes = Sequelize.DataTypes;
 module.exports = function (app) {
   const sequelizeClient = app.get('sequelizeClient');
   const discordhandles = sequelizeClient.define('discordhandles', {
-    text: {
+    name: {
       type: DataTypes.STRING,
+      allowNull: false
+    },
+    handle: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    country: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    isGiver: {
+      type: DataTypes.BOOLEAN,
       allowNull: false
     }
   }, {
