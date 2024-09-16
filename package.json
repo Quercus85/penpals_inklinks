@@ -1,15 +1,15 @@
 {
   "name": "penpals-inklinks",
   "description": "An app for a simple artshare",
-  "version": "4.0.0",
+  "version": "1.0.0",
   "homepage": "www.penpalsinklinks.com",
   "main": "src",
   "keywords": [
     "feathers"
   ],
   "author": {
-    "name": "David Luecke",
-    "email": "daff@neyeon.com"
+    "name": "Luca Cassanelli",
+    "email": "luca.cassa@hotmail.it"
   },
   "contributors": [],
   "bugs": {},
