@@ -10,7 +10,7 @@ client.configure(feathers.socketio(socket));
 
 // Login screen
 const welcomeHTML =
-  `
+ `
 <main class="mainpage container">
   <div class="row">
     <div class="col-12 col-6-tablet push-3-tablet text-center heading">
@@ -100,6 +100,7 @@ const welcomeHTML =
   </div>
   <div class="col-12 col-6-tablet push-3-tablet col-4-desktop push-4-desktop">
     <div class="error-message" style="color: red; display: none;"></div>
+    <div class="success-message" style="color: rgb(0, 188, 0); display: none;"></div>
     <form class="form">
         <fieldset for="username">
             Insert your Discord username:
@@ -190,15 +191,12 @@ const dataCheck = (username, handle, country, giver) => {
     resultObject.country = escape(country)
   }
   resultObject.isGiver = giver;
-
-  console.log("oggetto risultante: " + JSON.stringify(resultObject))
-
   return resultObject
 };
 
-const flushObject = (data) =>{
-  data.name= undefined;
-  data.handle= undefined;
+const flushObject = (data) => {
+  data.name = undefined;
+  data.handle = undefined;
   data.country = undefined;
   data.isGiver = undefined;
 }
@@ -210,6 +208,7 @@ addEventListener('.form', 'submit', async ev => {
   const country = document.querySelector('[name="country"]').value;
   const giver = document.querySelector('[name="giver"]').checked;
   const errorMessage = document.querySelector('.error-message');
+  const successMessage = document.querySelector('.success-message');
 
   ev.preventDefault();
   //input check
@@ -218,11 +217,13 @@ addEventListener('.form', 'submit', async ev => {
   if (dataToInsert.name == undefined) {
     errorMessage.textContent = 'Discord username field is mandatory';
     errorMessage.style.display = 'block';
+    successMessage.style.display = 'none';
     flushObject(dataToInsert)
     return;
   } else if (dataToInsert.handle == undefined) {
     errorMessage.textContent = 'Discord handle field is mandatory';
     errorMessage.style.display = 'block';
+    successMessage.style.display = 'none';
     flushObject(dataToInsert)
     return;
   } else {
@@ -230,25 +231,44 @@ addEventListener('.form', 'submit', async ev => {
   }
 
   try {
-    const createHandle = await client.service('discordhandles').create({
-      name: dataToInsert.name,
-      handle: dataToInsert.handle,
-      country: dataToInsert.country,
-      isGiver: dataToInsert.isGiver
+    const findHandle = await client.service('discordhandles').find({
+      query: {
+        name: dataToInsert.name,
+        handle: dataToInsert.handle
+      }
     });
 
-    //chiamata al servizio
-    const result = createHandle;
-    console.log(result);
+    console.log("find: " + JSON.stringify(findHandle))
 
-    if (result != undefined) {
-      //fields reset
-      document.querySelector('[name="username"]').value = '';
-      document.querySelector('[name="handle"]').value = '';
-      document.querySelector('[name="country"]').value = '';
-      document.querySelector('[name="giver"]').checked = false;
-      flushObject(dataToInsert);
+    if (findHandle.total > 0) {
+      errorMessage.textContent = 'This username/handle already exists !';
+      errorMessage.style.display = 'block';
+      successMessage.style.display = 'none';
     }
+    else {
+
+      //chiamata al servizio
+      const createHandle = await client.service('discordhandles').create({
+        name: dataToInsert.name,
+        handle: dataToInsert.handle,
+        country: dataToInsert.country,
+        isGiver: dataToInsert.isGiver
+      });
+
+      console.log(createHandle);
+
+      if (createHandle != undefined) {
+        //fields reset
+        document.querySelector('[name="username"]').value = '';
+        document.querySelector('[name="handle"]').value = '';
+        document.querySelector('[name="country"]').value = '';
+        document.querySelector('[name="giver"]').checked = false;
+        successMessage.textContent = 'Your entry has been successful. Thanks for your participation !';
+        successMessage.style.display = 'block';
+        flushObject(dataToInsert);
+      }
+    }
+
   } catch (error) {
     console.error('Errore durante l\'invio dei dati: ', error);
   }
